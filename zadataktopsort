@@ -1,0 +1,89 @@
+# include < stdlib .h >
+# include < stdio .h >
+# include <set >
+# include < list >
+# include < stack >
+
+using namespace std ;
+
+void TopologicalSort ( int cur ,int* o , list <int > ls [] , stack <int >& s )
+{
+    o [ cur ]=1;
+    for ( list <int > :: iterator it = ls [ cur ]. begin () ; it != ls [ cur ]. end () ; it ++)
+    if( o [* it ]==0) TopologicalSort (* it ,o , ls , s) ;
+    s.push ( cur ) ;
+}
+
+bool dfs (int x , set <int >& wSet , set <int >& gSet , set <int >& bSet ,int ** a , int n )
+{
+
+    wSet . erase ( wSet . find (x ) ) ;
+    gSet . insert ( x ) ;
+
+    for (int i = 0; i < n ; i ++)
+    {
+    if( a [ x ][ i ] != 0) 
+        {
+        if( bSet . find ( i ) != bSet . end () )
+            continue ;
+        if( gSet . find ( i ) != gSet . end () )
+            return true ;
+        if( dfs (i , wSet , gSet , bSet ,a , n ) )
+            return true ;
+        }
+    }
+
+    gSet . erase ( gSet . find (x ) ) ;
+    bSet . insert ( x ) ;
+    return false ;
+}
+
+bool hasCycle (int ** a , int n ) 
+{
+    set <int > wSet , gSet , bSet ;
+    for (int i = 0; i < n; i ++)
+    wSet . insert ( i ) ; 
+
+    while ( wSet . size () > 0) 
+    {
+    for (int current = 0; current < n ; current ++) 
+        {
+        if( wSet . find ( current ) != wSet . end () )
+        if( dfs ( current , wSet , gSet , bSet ,a , n) )
+        return true ;
+        }
+    }
+    return false ;
+}
+
+int main () 
+{
+    int n , m ;
+    scanf ("%d%d" ,&n ,& m ) ; // broj cvorova grafa
+    int * o =( int *) calloc (n , sizeof (int) ) ;
+    int ** a = new int *[ n ];
+    for ( int i =0; i < n ; i ++)
+    {
+        a [ i ]=( int *) calloc (n , sizeof (int ) );
+    }
+    int x , y ;
+    list <int > ls [ n ];
+    for ( int i =0; i < m ; i ++)
+        {
+            scanf ("%d%d" ,&x ,& y ) ;
+            a [x -1][ y -1]=1;
+            ls [x -1]. push_back (y -1) ;
+        }
+    stack <int > s ;
+    bool res ;
+    res = hasCycle (a , n ) ;
+    if( res )
+    {
+        printf ("Uneti graf je cikliccan i radnik ne moze odraditi sve poslove") ;
+        printf ("%d" , -1) ;
+    }
+    else
+    for (int i =0; i < n ; i ++)
+    if( o [ i ]==0) TopologicalSort (i ,o , ls , s ) ;
+    while (! s . empty () ) { printf (" %d",s . top () +1) ; s . pop () ;}
+}
