@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define POVEZANO 1
+#define NEDEFINISANO -1
+#define NEMA 0
+#define IMA 1
+int time = 0;
+int ciklus = 0;
+
+void dfs (int **graf, int *d,int *f,int n,int x,int *topsort, int *br)
+{
+    time++;
+    d[x]=time;
+    for (int i=0; i<n; i++)
+    {
+        if (graf[x][i]==POVEZANO)
+        {
+            if (d[i]==NEDEFINISANO)
+                dfs(graf,d,f,n,i,topsort,br);
+            else if (f[i]==NEDEFINISANO)
+            {
+                ciklus = IMA;
+                printf("Graf pravi ciklicnu vezu kod %d %d\n.",i,x);
+            }
+        }
+    }
+    time++;
+    f[x]=time;
+    if(ciklus==NEMA)
+    {
+        topsort[*br]=x;
+        (*br)--;
+    }
+}
+
+
+int main ()
+{
+    int *d, *f, *topsort;
+    int n, m, br;
+    int x, y;
+
+    scanf ("%d%d",&n,&m);
+
+    int **graf = (int**) calloc (n, sizeof(int*));
+    for (int i=0; i<n; i++)
+        graf[i] = (int*) calloc (n, sizeof(int));
+
+    d = (int*) malloc (n*sizeof(int));
+    f = (int*) malloc (n*sizeof(int));
+    topsort = (int*) malloc (n*sizeof(int));
+
+    br = n-1;
+
+    for (int i=0; i<n; i++)
+    {
+        d[i] = NEDEFINISANO;
+        f[i] = NEDEFINISANO;
+        topsort[i] = NEDEFINISANO;
+    }
+
+    for (int i=0; i<m; i++)
+    {
+        scanf ("%d%d",&x,&y);
+        graf[x][y]=POVEZANO;
+    }
+
+    for (int i=0; i<n; i++)
+        if (d[i]==NEDEFINISANO)
+            dfs(graf,d,f,n,i,topsort,&br);
+
+    printf("Ulazna vremena:\n");
+	for (int i=0; i<n; i++)
+		printf("%d ", d[i]);
+	printf("\n");
+
+	printf("Izlazna vremena:\n");
+	for (int i=0; i<n; i++)
+		printf("%d ", f[i]);
+	printf("\n");
+
+    printf("Topoloski sortiran:\n");
+	if (ciklus == NEMA)
+    {
+        for (int i=0; i<n; i++)
+            printf("%d ", topsort[i]);
+            putchar('\n');
+    }
+    else
+        printf("Graf je ciklican.");
+
+    return 0;
+}
